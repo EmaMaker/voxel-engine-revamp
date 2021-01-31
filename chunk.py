@@ -11,8 +11,6 @@ class Chunk:
         # Dictionary to store chunks blocks (Vec3 position, BlockType)
         self.blocks = {}
 
-        self.mesh = []
-
         for i in range(0, self.size):
             for k in range(0, self.size):
                 self.blocks.update({Vec3(i, 0, k): BlockType.GRASS})
@@ -20,11 +18,8 @@ class Chunk:
     # Generate a mesh using quads
     def generate_mesh(self):
         if self.update is True:
-            for i in self.mesh:
-                destroy(i)
-            self.mesh.clear()
 
-            print("Updating chunk " + str(self))
+            # print("Updating chunk " + str(self))
 
             verts = ()
             tris = ()
@@ -76,15 +71,16 @@ class Chunk:
                     norms = norms + ((1,0,0), (1,0,0), (1,0,0), (1,0,0))
                     colors = colors + (color.red, color.blue, color.lime, color.black)
 
-            e = Entity(model=Mesh(vertices=verts, triangles=tris, normals=norms, colors=colors), scale=1)
-            e.origin = Vec3.zero
-            e.position = self.position * self.size
-            Entity(model='sphere', position=e.origin)
-            e.collider = MeshCollider(e, mesh=e.model, center=e.origin)
-
-            print("Chunk with origin: " + str(e.origin))
+            self.mesh = Entity(model=Mesh(vertices=verts, triangles=tris, normals=norms, colors=colors), scale=1)
+            self.mesh.origin = Vec3.zero
+            self.mesh.position = self.position * self.size
+            self.mesh.collider = MeshCollider(self.mesh, mesh=self.mesh.model, center=self.mesh.origin)
 
             self.update = False
 
-    #def requestChange(self):
-    #    self.update = True
+    def requestChange(self):
+        self.update = True
+
+    def destroy(self):
+        destroy(self.mesh)
+
