@@ -1,3 +1,5 @@
+'''Check the Ursina Game Engine page at https://github.com/pokepetter/ursina'''
+
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import camera_grayscale_shader
@@ -12,22 +14,19 @@ def update():
 
     render_distance = 3
 
-    for j in range(int(camera.position.z/16) - render_distance, int(camera.position.z/16)+render_distance):
-        for i in range(int(camera.position.x/16) - render_distance, int(camera.position.x/16)+render_distance):
+    for j in range(int(player.position.z/16) - render_distance, int(player.position.z/16)+render_distance):
+        for i in range(int(player.position.x/16) - render_distance, int(player.position.x/16)+render_distance):
             if not Vec3(i,0,j) in world:
-                chunk = Chunk(position=(i,0,j))
+                chunk = Chunk(position=Vec3(i,0,j))
                 world.update({Vec3(i,0,j) : chunk})
                 print("Generating new chunk in {}, {}, {}".format(i,0,j))
 
-
     for chunk in world.values():
         chunk.generate_mesh()
+    
+    #print("Player At " + str(player.position))
 
+if __name__ == "__main__":
 
-# player = FirstPersonController()
-camera = EditorCamera()
-''''chunk = Chunk(position=(0,0,0))
-chunk1 = Chunk(position=(1,0,0))
-world.update({Vec3(0,0,0) : chunk})
-world.update({Vec3(1,0,0) : chunk1})'''
-app.run()
+    player = FirstPersonController()
+    app.run()
