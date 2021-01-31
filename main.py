@@ -37,6 +37,8 @@ if __name__ == "__main__":
     todelete = []
 
     player = FirstPersonController(world_position=Vec3(8,18,8))
+    collision_zone = CollisionZone(parent=player, radius=32)
+    #player = EditorCamera()
 
     window.vsync = False
     window.show_ursina_splash = True
