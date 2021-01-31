@@ -1,5 +1,6 @@
 from blocks import *
 from ursina import *
+import utils
 
 class Chunk:
     def __init__(self, position=Vec3(0, 0, 0)):
@@ -10,10 +11,8 @@ class Chunk:
 
         # Dictionary to store chunks blocks (Vec3 position, BlockType)
         self.blocks = {}
+        self.generateOpenSimplex()
 
-        for i in range(0, self.size):
-            for k in range(0, self.size):
-                self.blocks.update({Vec3(i, 0, k): BlockType.GRASS})
 
     # Generate a mesh using quads
     def generate_mesh(self):
@@ -84,3 +83,24 @@ class Chunk:
     def destroy(self):
         destroy(self.mesh)
 
+
+    def placeBlockAt(self, x,y,z, type):
+        self.blocks.update({Vec3(x, y, z): type})
+
+
+    def generatePlain(self):
+        for i in range(0, self.size):
+            for k in range(0, self.size):
+                self.placeBlockAt(i,0,k, BlockType.GRASS)
+
+
+    def generateOpenSimplex(self):
+        self.generatePlain()
+        for i in range(0, self.size):
+            for k in range(0, self.size):
+                value = utils.map( utils.simplex2d( (self.position.x*self.size+i)*0.025, (self.position.z*self.size+k)*0.025) , -1, 1, 0, self.size)
+                for j in range(0, int(value)):
+                    self.placeBlockAt(i,j,k, BlockType.GRASS)
+
+
+                    

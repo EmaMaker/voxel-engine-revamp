@@ -8,7 +8,6 @@ from chunk import Chunk
 from utils import *
 
 def update():
-
     render_distance = 2
 
     for j in range(int(player.position.z/16) - render_distance, int(player.position.z/16)+render_distance):
@@ -28,15 +27,18 @@ def update():
     for vec in todelete:
         del world[vec]
     todelete.clear()
-    
-    #print("Player At " + str(player.position))
 
 if __name__ == "__main__":
+    initUtils()
     app = Ursina()
 
     # Dictionary to store world chunks (Vec3 position, Chunk)
     world = {}
     todelete = []
 
-    player = FirstPersonController()
+    player = FirstPersonController(world_position=Vec3(8,18,8))
+
+    window.vsync = False
+    window.show_ursina_splash = True
+
     app.run()
