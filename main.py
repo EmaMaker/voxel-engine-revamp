@@ -7,35 +7,42 @@ from ursina.shaders import camera_grayscale_shader
 from chunk import Chunk
 from utils import *
 
-import threading
+import threading, queue
+
+q = queue.Queue()
+render_distance = 2
+
 
 def update():
-    render_distance = 2
+    for j in range(int(player.position.z/16) - render_distance, int(player.position.z/16)+render_distance):
+        for i in range(int(player.position.x/16) - render_distance, int(player.position.x/16)+render_distance):
+            if  not (Vec3(i,0,j) in world):
+                world.update({Vec3(i,0,j) : Chunk(position=Vec3(i,0,j))})
+                #print("Generating new chunk in {}, {}, {}".format(i,0,j))   
 
-    with threading.Lock():
-        for j in range(int(player.position.z/16) - render_distance, int(player.position.z/16)+render_distance):
-            for i in range(int(player.position.x/16) - render_distance, int(player.position.x/16)+render_distance):
-                if  not (Vec3(i,0,j) in world):
-                    world.update({Vec3(i,0,j) : Chunk(position=Vec3(i,0,j))})
-                    print("Generating new chunk in {}, {}, {}".format(i,0,j))   
+    for vec in world:
+        world[vec].update()
+        q.put(world[vec])
 
-        for vec in world:
-            if vec3dist(player_to_chunk(player.position, world[vec].size), vec) > render_distance+1:
-                print("Deleting chunk at " + str(vec))
-                world[vec].destroy()
-                todelete.append(vec)
-            else:
-                world[vec].update()
+    # for vec in world:
+    #     if vec3dist(player_to_chunk(player.position, world[vec].size), vec) > render_distance+1:
+    #         print("Deleting chunk at " + str(vec))
+    #         world[vec].destroy()
+    #         todelete.append(vec)
+    #     else:
+    #         world[vec].update()
+    #         if(world[vec].needs_update == True):
+    #             q.put(world[vec])
 
-        for vec in todelete:
-            del world[vec]
-        todelete.clear()
+    # for vec in todelete:
+    #     del world[vec]
+    # todelete.clear()
 
 def threaded_update():
     while(1):
-        with threading.Lock():
-            for chunk in world.values():
-                chunk.compute_mesh()
+        chunk = q.get()
+        chunk.compute_mesh()
+        q.task_done()
 
 if __name__ == "__main__":
     initUtils()
@@ -45,13 +52,12 @@ if __name__ == "__main__":
     world = {}
     todelete = []
 
-    player = FirstPersonController(world_position=Vec3(8,18,8))
+    player = FirstPersonController(world_position=Vec3(8,35,8))
     collision_zone = CollisionZone(parent=player, radius=32)
     #player = EditorCamera()
 
     try:
-        update_thread = threading.Thread(target=threaded_update)
-        update_thread.start()
+        threading.Thread(target=threaded_update, daemon=True).start()
     except:
         print("Couldn't start update thread")
 
